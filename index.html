@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<title>Virtual Mafia Game</title>
+<script src="index.js"></script>
+<head>
+    <link rel="stylesheet" href="./index.css">
+  </head>
+
+<body style="text-align: center;">
+    <h1>Virtual Mafia Game</h1>
+    <div>
+        <input id="player-name" placeholder="enter players" />
+        <button onclick="printPlayers()">add</button>
+    </div>
+    <div>
+        <input id="player-remove" placeholder="remove players" />
+        <button onclick="removePlayers()">remove</button>
+    </div>
+    <h3> Total players </h3>
+    <div id="player-list"></div>
+    <br>
+    <button id="new-game" onclick="assignRoles()">New Game</button> <br>
+
+    <div id="player-role"></div>
+    <br>
+
+
+
+    <div id="final-game">
+        <button onclick="startGame()">Start</button>
+
+    </div>
+
+    <h3> active players </h3>
+
+    <div id="active-player"></div>
+    <br>
+    <div>
+    <input id="player-dead" placeholder="dead players" />
+    <button onclick="deadPlayers()">dead</button>
+    </div>
+    <br>
+
+    <div id="player-dead-list"></div>
+
+    <button id="speech-btn" onclick="speakOutLoud()" style="display: none;"></button>
+
+</body>
+
+</html>
