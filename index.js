@@ -172,7 +172,10 @@ async function assignRoles() {
         document.getElementById("player-role").removeChild(para);
 
     }
-    activePlayer = players;
+    activePlayer = [...players];
+    activePlayer = activePlayer.map(value => ({ value, sort: Math.random() }))
+                            .sort((a, b) => a.sort - b.sort)
+                            .map(({ value }) => value)
 
     activePlayer.map((e) => {
         const btn = document.createElement("button")
