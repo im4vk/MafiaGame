@@ -225,7 +225,9 @@ function saveRoomData() {
     const roomData = {
         code: roomCode,
         players: players,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        status: 'open',
+        hostActive: true
     };
     // Save to localStorage
     localStorage.setItem(STORAGE_KEYS.ROOM_DATA + roomCode, JSON.stringify(roomData));
@@ -260,7 +262,8 @@ function displayRoomInfo() {
                 <input type="text" value="${joinUrl}" readonly onclick="this.select()" style="width: 80%; margin: 10px 0; cursor: pointer;" />
                 <div id="qrcode" style="margin: 15px auto; background: white; padding: 10px; border-radius: 10px; display: inline-block;"></div>
                 <p style="color: #6bcfff; font-size: 14px;">Players can scan the QR code to join!</p>
-                <p style="color: #ffd93d; font-size: 12px; margin-top: 10px;">⚠️ Note: Keep this page open while players join!</p>
+                <p style="color: #ffd93d; font-size: 13px; margin-top: 10px; font-weight: 600;">⚠️ IMPORTANT: Due to browser limitations, players joining from other devices won't appear here automatically.</p>
+                <p style="color: #ff6b6b; font-size: 12px; margin-top: 5px;">✅ Recommended: After players join successfully, manually add their names using "➕ Add Player" button above.</p>
             </div>
         `;
         
@@ -327,7 +330,16 @@ function startSyncInterval() {
 function closeRoom() {
     if (confirm("⚠️ Close this room? Players won't be able to join anymore.")) {
         if (roomCode) {
-            localStorage.removeItem(STORAGE_KEYS.ROOM_DATA + roomCode);
+            // Mark room as closed instead of deleting it
+            const roomData = {
+                code: roomCode,
+                players: players,
+                timestamp: Date.now(),
+                status: 'closed',
+                hostActive: false,
+                closedAt: Date.now()
+            };
+            localStorage.setItem(STORAGE_KEYS.ROOM_DATA + roomCode, JSON.stringify(roomData));
         }
         localStorage.removeItem(STORAGE_KEYS.ROOM_CODE);
         localStorage.removeItem(STORAGE_KEYS.IS_HOST);
@@ -339,7 +351,11 @@ function closeRoom() {
             syncInterval = null;
         }
         
-        document.getElementById("room-info").innerHTML = '';
+        document.getElementById("room-info").innerHTML = '<p style="color: #ff6b6b; font-weight: 600;">Room closed successfully! No new players can join.</p>';
+        
+        setTimeout(() => {
+            document.getElementById("room-info").innerHTML = '';
+        }, 3000);
     }
 }
 
