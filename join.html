@@ -114,7 +114,12 @@
             let roomData = localStorage.getItem(STORAGE_KEYS.ROOM_DATA + code);
             if (roomData) {
                 try {
-                    return JSON.parse(roomData);
+                    const data = JSON.parse(roomData);
+                    // Check if room is closed
+                    if (data.status === 'closed') {
+                        return { ...data, isClosed: true };
+                    }
+                    return data;
                 } catch (e) {
                     console.error("Error loading room data from localStorage:", e);
                 }
@@ -126,6 +131,9 @@
                 try {
                     const data = JSON.parse(roomData);
                     if (data.code === code) {
+                        if (data.status === 'closed') {
+                            return { ...data, isClosed: true };
+                        }
                         return data;
                     }
                 } catch (e) {
@@ -133,11 +141,12 @@
                 }
             }
             
-            // Create new room data if not found
+            // Create new room data if not found (for first joiner)
             return {
                 code: code,
                 players: [],
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                status: 'open'
             };
         }
         
@@ -200,6 +209,13 @@
                 return;
             }
             
+            // Check if room is closed
+            if (roomData.isClosed || roomData.status === 'closed') {
+                showStatus('🚫 This room is closed! The host has ended this session.', 'error');
+                document.getElementById('join-form').style.display = 'none';
+                return;
+            }
+            
             // Check if name already exists
             if (roomData.players.some(p => p.toLowerCase() === playerName.toLowerCase())) {
                 showStatus(`⚠️ Player "${playerName}" already joined!`, 'error');
@@ -211,8 +227,25 @@
             roomData.timestamp = Date.now();
             saveRoomData(roomCode, roomData);
             
-            // Show success
-            showStatus(`✅ Successfully joined as "${playerName}"!`, 'success');
+            // Show success with instructions
+            const successMsg = `
+                <div style="text-align: center;">
+                    <h2 style="color: #38ef7d; margin-bottom: 15px;">✅ Successfully Joined!</h2>
+                    <p style="color: #fff; font-size: 18px; font-weight: 600;">Welcome, ${playerName}!</p>
+                    <div style="background: rgba(255, 217, 61, 0.1); padding: 15px; border-radius: 10px; margin: 20px 0; border: 2px solid rgba(255, 217, 61, 0.3);">
+                        <p style="color: #ffd93d; font-size: 14px; font-weight: 600;">⚠️ IMPORTANT NEXT STEP:</p>
+                        <p style="color: #fff; font-size: 13px; margin-top: 10px;">
+                            Tell the HOST (person with the main game) your name: <strong style="color: #38ef7d;">${playerName}</strong>
+                        </p>
+                        <p style="color: #fff; font-size: 13px; margin-top: 5px;">
+                            They need to manually add you using the "➕ Add Player" button.
+                        </p>
+                    </div>
+                    <p style="color: #6bcfff; font-size: 12px;">Keep this page open until the game starts!</p>
+                </div>
+            `;
+            
+            showStatus(successMsg, 'success');
             document.getElementById('join-form').style.display = 'none';
             document.getElementById('player-list-area').style.display = 'block';
             
@@ -269,12 +302,20 @@
             // Load room data - create if doesn't exist
             let roomData = loadRoomData(roomCode);
             
+            // Check if room is closed
+            if (roomData && (roomData.isClosed || roomData.status === 'closed')) {
+                showStatus('🚫 This room is closed! The host has ended this session. Please ask the host to create a new room.', 'error');
+                document.getElementById('join-form').style.display = 'none';
+                return;
+            }
+            
             // Always allow joining - the loadRoomData now creates empty room if not exists
             if (!roomData || !roomData.players) {
                 roomData = {
                     code: roomCode,
                     players: [],
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    status: 'open'
                 };
                 saveRoomData(roomCode, roomData);
             }
