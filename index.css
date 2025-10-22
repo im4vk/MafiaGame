@@ -1,49 +1,417 @@
-html{
-    background-color: powderblue;
-}
-h1{
-    color: rgb(175, 25, 78);
-}
-h2{
-    color:rgb(175, 25, 78)
-}
-h3{
-    color:rgb(175, 25, 78)
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
+html {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-button{
-    background-color: #5d46b7; /* Green */
-    border: none;
-    color: white;
-    padding: 5px 15px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
+body {
+    padding: 20px;
+    color: #fff;
+}
+
+h1 {
+    color: #ff6b6b;
+    font-size: 2.8em;
+    text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+    margin: 20px 0;
+    font-weight: 700;
+    letter-spacing: 2px;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+    to { text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 40px rgba(255, 107, 107, 0.4); }
+}
+
+h2 {
+    color: #ffd93d;
+    font-size: 2em;
+    margin: 15px 0;
+    text-shadow: 0 2px 10px rgba(255, 217, 61, 0.3);
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h3 {
+    color: #6bcfff;
+    font-size: 1.5em;
+    margin: 15px 0;
+    text-shadow: 0 2px 8px rgba(107, 207, 255, 0.3);
+}
+
+/* Input containers */
+div {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 15px auto;
+    max-width: 800px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+div:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Input container styling */
+.input-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Input fields */
+input[type="text"],
+input[type="number"] {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 240, 255, 0.95) 100%);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 14px 20px;
     font-size: 16px;
-    margin: 10px;
+    font-weight: 500;
+    color: #1a1a2e;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1),
+                inset 0 1px 3px rgba(255, 255, 255, 0.8);
+    position: relative;
 }
 
-div{
-    background-color: #add533; /* Green */
+input[type="text"]:hover,
+input[type="number"]:hover {
+    border-color: #667eea;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2),
+                inset 0 1px 3px rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 25px rgba(255, 107, 107, 0.4),
+                0 8px 25px rgba(255, 107, 107, 0.2),
+                inset 0 1px 3px rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px) scale(1.02);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 245, 245, 1) 100%);
+}
+
+input::placeholder {
+    color: #888;
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* Text input specific styling */
+#player-name,
+#player-remove,
+#player-dead {
+    min-width: 250px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.95) 100%);
+}
+
+#player-name:focus {
+    background: linear-gradient(135deg, rgba(240, 255, 240, 1) 0%, rgba(230, 255, 240, 1) 100%);
+    border-color: #38ef7d;
+    box-shadow: 0 0 25px rgba(56, 239, 125, 0.4),
+                0 8px 25px rgba(56, 239, 125, 0.2);
+}
+
+#player-remove:focus {
+    background: linear-gradient(135deg, rgba(255, 245, 240, 1) 0%, rgba(255, 240, 230, 1) 100%);
+    border-color: #ffa500;
+    box-shadow: 0 0 25px rgba(255, 165, 0, 0.4),
+                0 8px 25px rgba(255, 165, 0, 0.2);
+}
+
+#player-dead:focus {
+    background: linear-gradient(135deg, rgba(255, 240, 240, 1) 0%, rgba(255, 230, 230, 1) 100%);
+    border-color: #ff6b6b;
+    box-shadow: 0 0 25px rgba(255, 107, 107, 0.4),
+                0 8px 25px rgba(255, 107, 107, 0.2);
+}
+
+/* Buttons */
+button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
+    border-radius: 10px;
     color: white;
-    padding: 2px 5px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
+    padding: 12px 25px;
     font-size: 16px;
-    margin: 10px;
+    font-weight: 600;
+    margin: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+}
+
+/* Player buttons */
+#player-list button,
+#active-player button,
+#player-dead-list button {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    margin: 5px;
+    padding: 10px 20px;
+    box-shadow: 0 3px 10px rgba(245, 87, 108, 0.3);
+}
+
+#player-list button:hover,
+#active-player button:hover {
+    background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    transform: translateY(-2px) scale(1.05);
+}
+
+#player-dead-list button {
+    background: linear-gradient(135deg, #868f96 0%, #596164 100%);
+    opacity: 0.7;
+    text-decoration: line-through;
+}
+
+/* New Game button */
 #new-game {
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    padding: 18px 40px;
+    font-size: 18px;
+    box-shadow: 0 5px 20px rgba(56, 239, 125, 0.4);
+    margin: 20px;
+}
+
+#new-game:hover {
+    background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+    box-shadow: 0 7px 25px rgba(56, 239, 125, 0.6);
+}
+
+/* Start button in final-game div */
+#final-game button {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    padding: 18px 40px;
+    font-size: 18px;
+    box-shadow: 0 5px 20px rgba(250, 112, 154, 0.4);
+}
+
+#final-game button:hover {
+    background: linear-gradient(135deg, #fee140 0%, #fa709a 100%);
+    box-shadow: 0 7px 25px rgba(250, 112, 154, 0.6);
+}
+
+/* Role configuration section */
+.role-config {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    padding: 25px;
+    margin: 20px auto;
+    max-width: 700px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.role-config label {
     display: inline-block;
+    margin: 10px 15px;
+    color: #fff;
+    font-weight: 600;
     font-size: 16px;
-    margin: 10px;
-  }
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.role-config input[type="number"] {
+    width: 70px;
+    padding: 10px 12px;
+    margin-left: 8px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 240, 255, 0.98) 100%);
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a2e;
+    transition: all 0.3s ease;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.15);
+}
+
+.role-config input[type="number"]:hover {
+    border-color: #764ba2;
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+    transform: translateY(-1px);
+}
+
+.role-config input[type="number"]:focus {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.4),
+                0 4px 15px rgba(255, 107, 107, 0.2);
+    transform: scale(1.05);
+    background: linear-gradient(135deg, rgba(255, 250, 250, 1) 0%, rgba(255, 245, 250, 1) 100%);
+}
+
+/* Remove spinner buttons for a cleaner look */
+.role-config input[type="number"]::-webkit-inner-spin-button,
+.role-config input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 30px;
+}
+
+/* Validation and distribution messages */
+#role-validation {
+    color: #ff6b6b;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px 20px;
+    margin: 10px auto;
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 80, 80, 0.1) 100%);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 107, 107, 0.3);
+    min-height: 20px;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.1);
+    animation: fadeIn 0.3s ease-in;
+}
+
+#role-distribution {
+    color: #38ef7d;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px 20px;
+    margin: 10px auto;
+    background: linear-gradient(135deg, rgba(56, 239, 125, 0.15) 0%, rgba(30, 220, 100, 0.1) 100%);
+    border-radius: 12px;
+    border: 2px solid rgba(56, 239, 125, 0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(56, 239, 125, 0.1);
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* Player count */
+#player-count {
+    color: #ffd93d;
+    font-weight: 700;
+    font-size: 1.3em;
+    text-shadow: 0 2px 8px rgba(255, 217, 61, 0.5);
+}
+
+/* Containers for player lists */
+#player-list,
+#active-player,
+#player-dead-list {
+    min-height: 40px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    margin: 10px auto;
+    max-width: 800px;
+}
+
+/* Game messages container */
+#final-game {
+    min-height: 100px;
+    padding: 20px;
+    margin: 20px auto;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+#final-game h1 {
+    font-size: 2.5em;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Add subtle animations for inputs */
+@keyframes inputGlow {
+    0% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+    100% { box-shadow: 0 0 10px rgba(255, 107, 107, 0.3); }
+}
+
+/* Loading/typing indicator effect */
+input[type="text"]:not(:placeholder-shown),
+input[type="number"]:not(:placeholder-shown) {
+    border-left: 4px solid #667eea;
+}
+
+/* Stylish focus ring alternative */
+input:focus-visible {
+    outline: none;
+}
+
+/* Better placeholder animation */
+@keyframes placeholderShift {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+input::placeholder {
+    animation: placeholderShift 3s ease-in-out infinite;
+}
+
+/* Input group styling for better visual hierarchy */
+.input-container {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    
+    .role-config label {
+        display: block;
+        margin: 8px 0;
+    }
+    
+    button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    input[type="text"],
+    input[type="number"] {
+        min-width: 200px;
+        font-size: 14px;
+        padding: 12px 16px;
+    }
+    
+    .input-container {
+        padding: 15px;
+    }
+}
