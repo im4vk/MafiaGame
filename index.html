@@ -6,40 +6,69 @@
   </head>
 
 <body style="text-align: center;">
-    <h1>Virtual Mafia Game for max 6 players</h1>
-    <div>
-        <input id="player-name" placeholder="enter players" />
-        <button onclick="printPlayers()">add</button>
+    <h1>🎭 Virtual Mafia Game 🎭</h1>
+    <h3>4+ Players • Unlimited Roles</h3>
+    
+    <!-- Room Management Section -->
+    <div style="margin: 20px auto; max-width: 800px;">
+        <button onclick="createRoom()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            📱 Create Room for Phone Join
+        </button>
+        <button onclick="clearAllPlayers()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);">
+            🗑️ Clear All Players
+        </button>
+        <button onclick="closeRoom()" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
+            🚫 Close Room
+        </button>
     </div>
-    <div>
-        <input id="player-remove" placeholder="remove players" />
-        <button onclick="removePlayers()">remove</button>
+    
+    <!-- Room Info Display -->
+    <div id="room-info"></div>
+    
+    <div class="input-container" style="margin-top: 30px;">
+        <input id="player-name" placeholder="👤 Enter player name..." autocomplete="off" />
+        <button onclick="printPlayers()">➕ Add Player</button>
     </div>
-    <h3> Total players </h3>
+    <div class="input-container">
+        <input id="player-remove" placeholder="❌ Remove player name..." autocomplete="off" />
+        <button onclick="removePlayers()">🗑️ Remove</button>
+    </div>
+    
+    <h3>👥 Total Players: <span id="player-count">0</span></h3>
     <div id="player-list"></div>
     <br>
-    <button id="new-game" onclick="assignRoles()">New Game</button> <br>
+    
+    <h3>🎯 Customize Roles</h3>
+    <div class="role-config">
+        <label>🤵 Godfathers: <input type="number" id="godfather-count" value="1" min="0" /></label>
+        <label>🔫 Mafia: <input type="number" id="mafia-count" value="1" min="0" /></label>
+        <label>🕵️ Detectives: <input type="number" id="detective-count" value="1" min="0" /></label>
+        <label>⚕️ Healers: <input type="number" id="healer-count" value="1" min="0" /></label>
+    </div>
+    <div id="role-validation"></div>
+    <div id="role-distribution"></div>
+    <br>
+    
+    <button id="new-game" onclick="assignRoles()">🎲 Start New Game</button> <br>
 
     <div id="player-role"></div>
     <br>
 
-
-
     <div id="final-game">
-        <button onclick="startGame()">Start</button>
-
+        <button onclick="startGame()">🌙 Begin Night Cycle</button>
     </div>
 
-    <h3> active players </h3>
-
+    <h3>💪 Active Players</h3>
     <div id="active-player"></div>
     <br>
-    <div>
-    <input id="player-dead" placeholder="dead players" />
-    <button onclick="deadPlayers()">dead</button>
+    
+    <div class="input-container">
+        <input id="player-dead" placeholder="⚰️ Enter eliminated player..." autocomplete="off" />
+        <button onclick="deadPlayers()">💀 Mark Dead</button>
     </div>
     <br>
 
+    <h3>☠️ Eliminated Players</h3>
     <div id="player-dead-list"></div>
 
     <button id="speech-btn" onclick="speakOutLoud()" style="display: none;"></button>
