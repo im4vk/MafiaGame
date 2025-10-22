@@ -7,23 +7,14 @@
 
 <body style="text-align: center;">
     <h1>🎭 Virtual Mafia Game 🎭</h1>
-    <h3>4+ Players • Unlimited Roles</h3>
+    <h3>4+ Players • Unlimited Roles • Single Screen Party Game</h3>
     
-    <!-- Room Management Section -->
+    <!-- Player Management Section -->
     <div style="margin: 20px auto; max-width: 800px;">
-        <button onclick="createRoom()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-            📱 Create Room for Phone Join
-        </button>
         <button onclick="clearAllPlayers()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);">
             🗑️ Clear All Players
         </button>
-        <button onclick="closeRoom()" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
-            🚫 Close Room
-        </button>
     </div>
-    
-    <!-- Room Info Display -->
-    <div id="room-info"></div>
     
     <div class="input-container" style="margin-top: 30px;">
         <input id="player-name" placeholder="👤 Enter player name..." autocomplete="off" />
