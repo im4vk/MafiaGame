@@ -1,22 +1,13 @@
 // Game settings
 timeSet = 5000;
 
-// Room management
-let roomCode = null;
-let isHost = false;
-
 // Player arrays
 let players = [];
 let activePlayer = [];
 let dead = [];
 
-// LocalStorage keys
-const STORAGE_KEYS = {
-    PLAYERS: 'mafia_game_players',
-    ROOM_CODE: 'mafia_game_room_code',
-    IS_HOST: 'mafia_game_is_host',
-    ROOM_DATA: 'mafia_room_'
-};
+// LocalStorage key
+const STORAGE_KEY = 'mafia_game_players';
 
 // Role arrays (support multiple of each type)
 let godfathers = [];
@@ -164,14 +155,11 @@ function updateRoleDistribution() {
 
 // LocalStorage functions
 function savePlayersToStorage() {
-    localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(players));
-    if (roomCode) {
-        saveRoomData();
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
 }
 
 function loadPlayersFromStorage() {
-    const savedPlayers = localStorage.getItem(STORAGE_KEYS.PLAYERS);
+    const savedPlayers = localStorage.getItem(STORAGE_KEY);
     if (savedPlayers) {
         try {
             players = JSON.parse(savedPlayers);
@@ -205,182 +193,10 @@ function clearAllPlayers() {
     }
 }
 
-// Room management functions
-function generateRoomCode() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
-function createRoom() {
-    roomCode = generateRoomCode();
-    isHost = true;
-    localStorage.setItem(STORAGE_KEYS.ROOM_CODE, roomCode);
-    localStorage.setItem(STORAGE_KEYS.IS_HOST, 'true');
-    
-    saveRoomData();
-    displayRoomInfo();
-    startSyncInterval();
-}
-
-function saveRoomData() {
-    const roomData = {
-        code: roomCode,
-        players: players,
-        timestamp: Date.now(),
-        status: 'open',
-        hostActive: true
-    };
-    // Save to localStorage
-    localStorage.setItem(STORAGE_KEYS.ROOM_DATA + roomCode, JSON.stringify(roomData));
-    
-    // Also save to sessionStorage for cross-tab communication
-    sessionStorage.setItem('mafia_current_room', JSON.stringify(roomData));
-}
-
-function loadRoomData(code) {
-    const roomData = localStorage.getItem(STORAGE_KEYS.ROOM_DATA + code);
-    if (roomData) {
-        try {
-            return JSON.parse(roomData);
-        } catch (e) {
-            console.error("Error loading room data:", e);
-        }
-    }
-    return null;
-}
-
-function displayRoomInfo() {
-    const roomInfoDiv = document.getElementById("room-info");
-    if (roomCode) {
-        // Encode current players in URL for cross-device access
-        const encodedPlayers = encodeURIComponent(JSON.stringify(players));
-        const joinUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}join.html?room=${roomCode}&host=${encodeURIComponent(window.location.href)}`;
-        
-        roomInfoDiv.innerHTML = `
-            <div style="background: rgba(56, 239, 125, 0.1); padding: 20px; border-radius: 15px; border: 2px solid rgba(56, 239, 125, 0.3); margin: 20px auto;">
-                <h3 style="color: #38ef7d; margin-bottom: 15px;">🎮 Room Code: <span style="font-size: 2em; letter-spacing: 5px;">${roomCode}</span></h3>
-                <p style="color: #fff; margin: 10px 0;">Share this link for players to join:</p>
-                <input type="text" value="${joinUrl}" readonly onclick="this.select()" style="width: 80%; margin: 10px 0; cursor: pointer;" />
-                <div id="qrcode" style="margin: 15px auto; background: white; padding: 10px; border-radius: 10px; display: inline-block;"></div>
-                <p style="color: #6bcfff; font-size: 14px;">Players can scan the QR code to join!</p>
-                <p style="color: #ffd93d; font-size: 13px; margin-top: 10px; font-weight: 600;">⚠️ IMPORTANT: Due to browser limitations, players joining from other devices won't appear here automatically.</p>
-                <p style="color: #ff6b6b; font-size: 12px; margin-top: 5px;">✅ Recommended: After players join successfully, manually add their names using "➕ Add Player" button above.</p>
-            </div>
-        `;
-        
-        // Generate QR code
-        generateQRCode(joinUrl);
-    }
-}
-
-function generateQRCode(url) {
-    const qrcodeDiv = document.getElementById("qrcode");
-    if (qrcodeDiv) {
-        qrcodeDiv.innerHTML = '';
-        // Simple QR code generation using QR Server API
-        const qrImg = document.createElement('img');
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
-        qrImg.alt = "QR Code";
-        qrImg.style.display = "block";
-        qrcodeDiv.appendChild(qrImg);
-    }
-}
-
-function syncPlayers() {
-    if (!roomCode) return;
-    
-    const roomData = loadRoomData(roomCode);
-    if (roomData && roomData.players) {
-        // Check if players list has changed
-        const currentPlayersStr = JSON.stringify(players.sort());
-        const roomPlayersStr = JSON.stringify(roomData.players.sort());
-        
-        if (currentPlayersStr !== roomPlayersStr) {
-            // Update players from room data
-            players = [...roomData.players];
-            
-            // Clear and rebuild UI
-            var child = document.getElementById("player-list").lastElementChild;
-            while (child) {
-                document.getElementById("player-list").removeChild(child);
-                child = document.getElementById("player-list").lastElementChild;
-            }
-            
-            players.forEach(name => {
-                const btn = document.createElement("button");
-                btn.id = name;
-                btn.innerHTML = name;
-                btn.addEventListener('click', function () {
-                    id = name;
-                });
-                document.getElementById("player-list").appendChild(btn);
-            });
-            
-            updatePlayerCount();
-        }
-    }
-}
-
-let syncInterval = null;
-
-function startSyncInterval() {
-    if (syncInterval) clearInterval(syncInterval);
-    syncInterval = setInterval(syncPlayers, 2000); // Sync every 2 seconds
-}
-
-function closeRoom() {
-    if (confirm("⚠️ Close this room? Players won't be able to join anymore.")) {
-        if (roomCode) {
-            // Mark room as closed instead of deleting it
-            const roomData = {
-                code: roomCode,
-                players: players,
-                timestamp: Date.now(),
-                status: 'closed',
-                hostActive: false,
-                closedAt: Date.now()
-            };
-            localStorage.setItem(STORAGE_KEYS.ROOM_DATA + roomCode, JSON.stringify(roomData));
-        }
-        localStorage.removeItem(STORAGE_KEYS.ROOM_CODE);
-        localStorage.removeItem(STORAGE_KEYS.IS_HOST);
-        roomCode = null;
-        isHost = false;
-        
-        if (syncInterval) {
-            clearInterval(syncInterval);
-            syncInterval = null;
-        }
-        
-        document.getElementById("room-info").innerHTML = '<p style="color: #ff6b6b; font-weight: 600;">Room closed successfully! No new players can join.</p>';
-        
-        setTimeout(() => {
-            document.getElementById("room-info").innerHTML = '';
-        }, 3000);
-    }
-}
-
-// Listen for messages from joined players
-window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'PLAYER_JOINED' && event.data.roomCode === roomCode) {
-        // Sync players from joining window
-        syncPlayers();
-    }
-});
-
 // Add event listeners to role inputs
 window.addEventListener('load', function() {
     // Load saved players
     loadPlayersFromStorage();
-    
-    // Check if host and restore room
-    const savedRoomCode = localStorage.getItem(STORAGE_KEYS.ROOM_CODE);
-    const savedIsHost = localStorage.getItem(STORAGE_KEYS.IS_HOST);
-    if (savedRoomCode && savedIsHost === 'true') {
-        roomCode = savedRoomCode;
-        isHost = true;
-        displayRoomInfo();
-        startSyncInterval();
-    }
     
     document.getElementById("godfather-count").addEventListener('input', updateRoleDistribution);
     document.getElementById("mafia-count").addEventListener('input', updateRoleDistribution);
