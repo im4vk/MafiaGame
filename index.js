@@ -227,7 +227,11 @@ function saveRoomData() {
         players: players,
         timestamp: Date.now()
     };
+    // Save to localStorage
     localStorage.setItem(STORAGE_KEYS.ROOM_DATA + roomCode, JSON.stringify(roomData));
+    
+    // Also save to sessionStorage for cross-tab communication
+    sessionStorage.setItem('mafia_current_room', JSON.stringify(roomData));
 }
 
 function loadRoomData(code) {
@@ -245,7 +249,10 @@ function loadRoomData(code) {
 function displayRoomInfo() {
     const roomInfoDiv = document.getElementById("room-info");
     if (roomCode) {
-        const joinUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}join.html?room=${roomCode}`;
+        // Encode current players in URL for cross-device access
+        const encodedPlayers = encodeURIComponent(JSON.stringify(players));
+        const joinUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}join.html?room=${roomCode}&host=${encodeURIComponent(window.location.href)}`;
+        
         roomInfoDiv.innerHTML = `
             <div style="background: rgba(56, 239, 125, 0.1); padding: 20px; border-radius: 15px; border: 2px solid rgba(56, 239, 125, 0.3); margin: 20px auto;">
                 <h3 style="color: #38ef7d; margin-bottom: 15px;">🎮 Room Code: <span style="font-size: 2em; letter-spacing: 5px;">${roomCode}</span></h3>
@@ -253,6 +260,7 @@ function displayRoomInfo() {
                 <input type="text" value="${joinUrl}" readonly onclick="this.select()" style="width: 80%; margin: 10px 0; cursor: pointer;" />
                 <div id="qrcode" style="margin: 15px auto; background: white; padding: 10px; border-radius: 10px; display: inline-block;"></div>
                 <p style="color: #6bcfff; font-size: 14px;">Players can scan the QR code to join!</p>
+                <p style="color: #ffd93d; font-size: 12px; margin-top: 10px;">⚠️ Note: Keep this page open while players join!</p>
             </div>
         `;
         
@@ -334,6 +342,14 @@ function closeRoom() {
         document.getElementById("room-info").innerHTML = '';
     }
 }
+
+// Listen for messages from joined players
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'PLAYER_JOINED' && event.data.roomCode === roomCode) {
+        // Sync players from joining window
+        syncPlayers();
+    }
+});
 
 // Add event listeners to role inputs
 window.addEventListener('load', function() {
