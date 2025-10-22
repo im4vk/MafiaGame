@@ -108,22 +108,61 @@
                 .join(' ');
         }
         
-        // Load room data
+        // Load room data from multiple sources
         function loadRoomData(code) {
-            const roomData = localStorage.getItem(STORAGE_KEYS.ROOM_DATA + code);
+            // Try localStorage first
+            let roomData = localStorage.getItem(STORAGE_KEYS.ROOM_DATA + code);
             if (roomData) {
                 try {
                     return JSON.parse(roomData);
                 } catch (e) {
-                    console.error("Error loading room data:", e);
+                    console.error("Error loading room data from localStorage:", e);
                 }
             }
-            return null;
+            
+            // Try sessionStorage
+            roomData = sessionStorage.getItem('mafia_current_room');
+            if (roomData) {
+                try {
+                    const data = JSON.parse(roomData);
+                    if (data.code === code) {
+                        return data;
+                    }
+                } catch (e) {
+                    console.error("Error loading room data from sessionStorage:", e);
+                }
+            }
+            
+            // Create new room data if not found
+            return {
+                code: code,
+                players: [],
+                timestamp: Date.now()
+            };
         }
         
-        // Save room data
+        // Save room data to multiple storages
         function saveRoomData(code, data) {
-            localStorage.setItem(STORAGE_KEYS.ROOM_DATA + code, JSON.stringify(data));
+            try {
+                const jsonData = JSON.stringify(data);
+                localStorage.setItem(STORAGE_KEYS.ROOM_DATA + code, jsonData);
+                sessionStorage.setItem('mafia_current_room', jsonData);
+                
+                // Also try to communicate with host window if opened from same origin
+                if (window.opener && !window.opener.closed) {
+                    try {
+                        window.opener.postMessage({
+                            type: 'PLAYER_JOINED',
+                            roomCode: code,
+                            players: data.players
+                        }, '*');
+                    } catch (e) {
+                        // Cross-origin, ignore
+                    }
+                }
+            } catch (e) {
+                console.error("Error saving room data:", e);
+            }
         }
         
         // Join the game
@@ -227,12 +266,17 @@
             
             document.getElementById('room-code-display').innerText = `Room: ${roomCode}`;
             
-            // Check if room exists
-            const roomData = loadRoomData(roomCode);
-            if (!roomData) {
-                showStatus('⚠️ Room not found! Ask the host to create a room.', 'error');
-                document.getElementById('join-form').style.display = 'none';
-                return;
+            // Load room data - create if doesn't exist
+            let roomData = loadRoomData(roomCode);
+            
+            // Always allow joining - the loadRoomData now creates empty room if not exists
+            if (!roomData || !roomData.players) {
+                roomData = {
+                    code: roomCode,
+                    players: [],
+                    timestamp: Date.now()
+                };
+                saveRoomData(roomCode, roomData);
             }
             
             showStatus(`Ready to join room: ${roomCode}`, 'waiting');
