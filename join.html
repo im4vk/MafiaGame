@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Join Mafia Game</title>
+    <link rel="stylesheet" href="./index.css">
+    <style>
+        body {
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .join-container {
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .success {
+            background: rgba(56, 239, 125, 0.2);
+            border: 2px solid rgba(56, 239, 125, 0.5);
+            color: #38ef7d;
+        }
+        
+        .error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid rgba(255, 107, 107, 0.5);
+            color: #ff6b6b;
+        }
+        
+        .waiting {
+            background: rgba(107, 207, 255, 0.2);
+            border: 2px solid rgba(107, 207, 255, 0.5);
+            color: #6bcfff;
+        }
+        
+        #join-form {
+            margin: 30px 0;
+        }
+        
+        .large-button {
+            width: 100%;
+            max-width: 350px;
+            height: 60px;
+            font-size: 20px;
+            margin: 15px auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="join-container">
+        <h1>🎭 Join Mafia Game</h1>
+        <h3 id="room-code-display"></h3>
+        
+        <div id="status-area"></div>
+        
+        <div id="join-form">
+            <div class="input-container">
+                <input type="text" id="player-name-join" placeholder="👤 Enter your name..." autocomplete="off" style="width: 100%; max-width: 350px;" />
+            </div>
+            <button onclick="joinGame()" class="large-button" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                ✅ Join Game
+            </button>
+        </div>
+        
+        <div id="player-list-area" style="display: none;">
+            <h3>👥 Players in Room:</h3>
+            <div id="joined-players" style="margin: 20px 0;"></div>
+            <p style="color: #6bcfff; font-size: 14px;">Waiting for host to start the game...</p>
+        </div>
+    </div>
+    
+    <script>
+        const STORAGE_KEYS = {
+            ROOM_DATA: 'mafia_room_'
+        };
+        
+        let roomCode = null;
+        let playerName = null;
+        let syncInterval = null;
+        
+        // Get room code from URL
+        function getRoomCodeFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('room');
+        }
+        
+        // Capitalize name properly (Title Case)
+        function capitalizeName(name) {
+            return name.trim()
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+        
+        // Load room data
+        function loadRoomData(code) {
+            const roomData = localStorage.getItem(STORAGE_KEYS.ROOM_DATA + code);
+            if (roomData) {
+                try {
+                    return JSON.parse(roomData);
+                } catch (e) {
+                    console.error("Error loading room data:", e);
+                }
+            }
+            return null;
+        }
+        
+        // Save room data
+        function saveRoomData(code, data) {
+            localStorage.setItem(STORAGE_KEYS.ROOM_DATA + code, JSON.stringify(data));
+        }
+        
+        // Join the game
+        function joinGame() {
+            const nameInput = document.getElementById('player-name-join');
+            const rawName = nameInput.value.trim();
+            
+            if (!rawName) {
+                showStatus('⚠️ Please enter your name!', 'error');
+                return;
+            }
+            
+            if (rawName.length < 2) {
+                showStatus('⚠️ Name must be at least 2 characters!', 'error');
+                return;
+            }
+            
+            if (rawName.length > 20) {
+                showStatus('⚠️ Name must be less than 20 characters!', 'error');
+                return;
+            }
+            
+            if (!/^[a-zA-Z\s'-]+$/.test(rawName)) {
+                showStatus('⚠️ Name should only contain letters!', 'error');
+                return;
+            }
+            
+            playerName = capitalizeName(rawName);
+            
+            // Load room data
+            const roomData = loadRoomData(roomCode);
+            
+            if (!roomData) {
+                showStatus('⚠️ Room not found or expired!', 'error');
+                return;
+            }
+            
+            // Check if name already exists
+            if (roomData.players.some(p => p.toLowerCase() === playerName.toLowerCase())) {
+                showStatus(`⚠️ Player "${playerName}" already joined!`, 'error');
+                return;
+            }
+            
+            // Add player to room
+            roomData.players.push(playerName);
+            roomData.timestamp = Date.now();
+            saveRoomData(roomCode, roomData);
+            
+            // Show success
+            showStatus(`✅ Successfully joined as "${playerName}"!`, 'success');
+            document.getElementById('join-form').style.display = 'none';
+            document.getElementById('player-list-area').style.display = 'block';
+            
+            // Start syncing
+            startSyncInterval();
+            updatePlayerList(roomData.players);
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            const statusArea = document.getElementById('status-area');
+            statusArea.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+        }
+        
+        // Update player list
+        function updatePlayerList(players) {
+            const playerListDiv = document.getElementById('joined-players');
+            playerListDiv.innerHTML = '';
+            
+            players.forEach(name => {
+                const playerDiv = document.createElement('div');
+                playerDiv.style.cssText = 'background: rgba(102, 126, 234, 0.2); padding: 12px; margin: 8px 0; border-radius: 10px; border: 2px solid rgba(102, 126, 234, 0.4);';
+                playerDiv.innerHTML = `<span style="font-size: 18px; font-weight: 600;">${name === playerName ? '👤 ' + name + ' (You)' : name}</span>`;
+                playerListDiv.appendChild(playerDiv);
+            });
+        }
+        
+        // Sync with room
+        function syncWithRoom() {
+            const roomData = loadRoomData(roomCode);
+            if (roomData && roomData.players) {
+                updatePlayerList(roomData.players);
+            }
+        }
+        
+        // Start sync interval
+        function startSyncInterval() {
+            if (syncInterval) clearInterval(syncInterval);
+            syncInterval = setInterval(syncWithRoom, 2000);
+        }
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            roomCode = getRoomCodeFromURL();
+            
+            if (!roomCode) {
+                showStatus('⚠️ No room code provided!', 'error');
+                document.getElementById('join-form').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('room-code-display').innerText = `Room: ${roomCode}`;
+            
+            // Check if room exists
+            const roomData = loadRoomData(roomCode);
+            if (!roomData) {
+                showStatus('⚠️ Room not found! Ask the host to create a room.', 'error');
+                document.getElementById('join-form').style.display = 'none';
+                return;
+            }
+            
+            showStatus(`Ready to join room: ${roomCode}`, 'waiting');
+            
+            // Enter key support
+            document.getElementById('player-name-join').addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    joinGame();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
